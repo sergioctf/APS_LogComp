@@ -1,7 +1,4 @@
-Thought for a few seconds
 
-
-Segue o `README.md` atualizado, com um novo bloco “Status das Entregas” que documenta a conclusão das Tarefas 1 e 2:
 
 ````markdown
 # APS de Lógica Computacional 2025.1 — Insper  
