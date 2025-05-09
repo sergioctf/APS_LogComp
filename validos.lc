@@ -1,0 +1,11 @@
+A1 = 123;
+B2 = 3.14;
+C3 = "Olá Mundo";
+D4 = SUM(A1:A5, 10, B2 * 2);
+IF D4 >= 20 THEN E5 = D4 / 2;
+WHILE E5 > 0 {
+  E5 = E5 - 1;
+}
+TABLE;
+EXPORT "saida.csv";
+

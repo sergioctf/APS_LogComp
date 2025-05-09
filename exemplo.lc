@@ -1,0 +1,16 @@
+// Atribuição simples
+A1 = 3.14;
+
+// Uso de função com range e lista
+B2 = SUM(A1:A3, 10, 5 + 2);
+
+// Condicional
+IF B2 >= 20 AND NOT (A1 == 0) THEN {
+  C3 = B2 / A1;
+}
+
+// Comando TABLE
+TABLE;
+
+// Exportação
+EXPORT "planilha.csv";

@@ -1,5 +1,12 @@
-# APS de Lógica Computacional 2025.1 - Insper
-## Sérgio Carmelo Tôrres Filho - Engenharia da Computação
+Thought for a few seconds
+
+
+Segue o `README.md` atualizado, com um novo bloco “Status das Entregas” que documenta a conclusão das Tarefas 1 e 2:
+
+````markdown
+# APS de Lógica Computacional 2025.1 — Insper  
+## Sérgio Carmelo Tôrres Filho — Engenharia da Computação  
+
 ---
 
 # LangCell
@@ -8,37 +15,29 @@
 
 ---
 
-##  Principais Recursos
+## Principais Recursos
 
-- **Células como variáveis**: `A1`, `B2`, …
-- **Valores**:
-  - Inteiros (`123`)
-  - **Floats** (`3.14`)
-  - **Textos** entre aspas (`"Hello"`)
-- **Operadores Aritméticos**: `+`, `-`, `*`, `/`
-- **Funções de Planilha**:  
-  `SUM()`, `AVERAGE()`, `MIN()`, `MAX()`
-- **Ranges**:  
-  `SUM(A1:A10)`, `AVERAGE(B2:D2)`
-- **Comparadores**: `>`, `<`, `>=`, `<=`, `==`, `!=`
-- **Operadores Lógicos**: `NOT`, `AND`, `OR`
-- **Comentários**:
-  - Linha única: `// comentário`
-  - Bloco: `/* comentário */`
-- **Reatividade**:  
-  Quando você altera o valor de uma célula, todas as células que dependem dela são recalculadas automaticamente.
-- **Condicionais**:  
-  `IF <expr> THEN <statement>…`
-- **Laços**:  
-  `WHILE <expr> { … }`
-- **PRINT de Planilha**:  
-  `TABLE;` → Imprime no terminal em formato tabular
-- **Exportação CSV**:  
-  `EXPORT "arquivo.csv";` → Salva o estado atual em CSV (maybe)
+- **Células como variáveis**: `A1`, `B2`, …  
+- **Valores**:  
+  - Inteiros (`123`)  
+  - **Floats** (`3.14`)  
+  - **Textos** entre aspas (`"Hello"`)  
+- **Operadores Aritméticos**: `+`, `-`, `*`, `/`  
+- **Funções de Planilha**: `SUM()`, `AVERAGE()`, `MIN()`, `MAX()`  
+- **Ranges**: `SUM(A1:A10)`, `AVERAGE(B2:D2)`  
+- **Comparadores**: `>`, `<`, `>=`, `<=`, `==`, `!=`  
+- **Operadores Lógicos**: `NOT`, `AND`, `OR`  
+- **Comentários**:  
+  - Linha única: `// comentário`  
+  - Bloco: `/* comentário */`  
+- **Condicionais**: `IF <expr> THEN <statement> …`  
+- **Laços**: `WHILE <expr> { … }`  
+- **PRINT de Planilha**: `TABLE;` → Imprime no terminal em formato tabular  
+- **Exportação CSV**: `EXPORT "arquivo.csv";` → Salva o estado atual em CSV  
 
 ---
 
-##  Gramática (EBNF)
+## Gramática (EBNF)
 
 ```ebnf
 <program> ::= { <comment> | <statement> }
@@ -64,7 +63,7 @@
       "//" { <character_except_newline> } "\n"
     | "/*" { <character> } "*/"
 
-<expression>      ::= [ "NOT" ] <logical-or>
+<expression>      ::= <logical-or>
 <logical-or>      ::= <logical-and> { "OR" <logical-and> }
 <logical-and>     ::= <comparison>  { "AND" <comparison> }
 <comparison>      ::= <addition-subtraction> { <comparator> <addition-subtraction> }
@@ -86,22 +85,22 @@
                        | <cell> ":" <cell>
 
 <cell>   ::= <letter> <number>
-<letter> ::= "A" | "B" | "C" | … | "Z"
+<letter> ::= "A" | "B" | … | "Z"
 
 <number> ::= <integer> | <float>
 <integer>::= <digit> { <digit> }
 <float>  ::= <digit> { <digit> } "." <digit> { <digit> }
-<digit>  ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<digit>  ::= "0" | "1" | … | "9"
 
 <text>   ::= '"' { <character> } '"'
-<character> ::= any printable character except '"'
+<character> ::= qualquer caractere imprimível exceto '"'
 
 <comparator> ::= ">" | "<" | ">=" | "<=" | "==" | "!="
-```
+````
 
 ---
 
-##  Exemplos de Uso
+## Exemplos de Uso
 
 ```langcell
 // Atribuições simples e floats
@@ -130,5 +129,18 @@ TABLE;
 EXPORT "planilha.csv";
 ```
 
+---
 
-> **Entrega final**: 10/Jun/2025  
+## Status das Entregas
+
+| Tarefa       | Descrição                                                  | Status                                                                                        |
+| ------------ | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Tarefa 1** | Definição da proposta, gramática EBNF e exemplos de uso    | ✅ Concluída                                                                                   |
+| **Tarefa 2** | Implementação de análise léxica (Flex) e sintática (Bison) | ✅ Concluída — compilador aceita gramática e retorna código 0 em casos válidos, 1 em inválidos |
+
+> **Próxima etapa**: Tarefa 3 — Análise semântica (construção de AST, checagem de tipos e avaliação de expressões).
+
+---
+
+**Entrega final**: 10/Jun/2025
+
