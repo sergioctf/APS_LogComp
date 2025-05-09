@@ -1,6 +1,4 @@
 
-
-````markdown
 # APS de Lógica Computacional 2025.1 — Insper  
 ## Sérgio Carmelo Tôrres Filho — Engenharia da Computação  
 
