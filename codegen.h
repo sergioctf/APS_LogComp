@@ -1,28 +1,23 @@
-// codegen.h
 #ifndef LANGCELL_CODEGEN_H
 #define LANGCELL_CODEGEN_H
 
 #include "ast.h"
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/ExecutionEngine/Orc/LLJIT.h>
 
-class CodeGenContext {
-public:
-  llvm::LLVMContext   context;
-  std::unique_ptr<llvm::Module> module;
-  llvm::IRBuilder<>   builder;
-  std::map<std::string, llvm::Value*> cellVars;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-  CodeGenContext();
-  void generateCode(Stmt* root);
-  void run();
-private:
-  llvm::orc::LLJIT*   jit;
-  llvm::Function*     createMain(Stmt* root);
-  llvm::Value*        genExpr(Expr* e);
-  void                genStmt(Stmt* s);
-};
+// Inicializa o LLVM (cria o module e o execution engine)
+void init_llvm(const char *module_name);
+
+// Gera o IR a partir da AST inteira
+void generate_code(Stmt *program);
+
+// Executa a função 'main' JIT-compiled e retorna o seu valor
+int run_code(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // LANGCELL_CODEGEN_H

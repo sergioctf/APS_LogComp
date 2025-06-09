@@ -7,6 +7,33 @@
 #include <string.h>
 #include "ast.h"
 
+// Se string contém vírgula, aspas ou newline, envolve em "..." e duplica as aspas internas
+static char *csv_escape(const char *s) {
+  int need = 0;
+  for (const char *p = s; *p; ++p) {
+      if (*p == '"' || *p == ',' || *p == '\n') need++;
+  }
+  // sem escapes, retorna copia direta
+  if (need == 0) return strdup(s);
+
+  size_t len = strlen(s) + need + 2 + 1;
+  char *out = malloc(len);
+  char *o = out;
+  *o++ = '"';
+  for (const char *p = s; *p; ++p) {
+      if (*p == '"') {
+          *o++ = '"';
+          *o++ = '"';
+      } else {
+          *o++ = *p;
+      }
+  }
+  *o++ = '"';
+  *o   = '\0';
+  return out;
+}
+
+
 // Tipo genérico de valor
 typedef enum { V_INT, V_FLOAT, V_TEXT } ValueKind;
 typedef struct {
@@ -58,7 +85,7 @@ static Value map_get(const char *name) {
     return (Value){.kind = V_INT, .ival = 0};
 }
 
-// Avalia expressão
+// Avalia uma expressão e retorna um Value
 static Value eval_expr(Expr *e) {
     switch (e->kind) {
       case EXPR_INT:
@@ -74,9 +101,10 @@ static Value eval_expr(Expr *e) {
         if (e->un.op == OP_NEG) {
             if (sub.kind == V_FLOAT) sub.fval = -sub.fval;
             else                      sub.ival = -sub.ival;
-        } else { // NOT
+        } else { // OP_NOT
             int cond = (sub.kind == V_FLOAT ? (int)sub.fval : sub.ival);
-            sub = (Value){.kind=V_INT, .ival = !cond};
+            sub.kind = V_INT;
+            sub.ival = !cond;
         }
         return sub;
       }
@@ -98,8 +126,8 @@ static Value eval_expr(Expr *e) {
           case OP_NE:  return (Value){.kind=V_INT,   .ival = l != r};
           case OP_AND: return (Value){.kind=V_INT,   .ival = (int)l && (int)r};
           case OP_OR:  return (Value){.kind=V_INT,   .ival = (int)l || (int)r};
-          default:     return (Value){.kind=V_INT,   .ival = 0};
         }
+        break;
       }
       case EXPR_CALL: {
         const char *fn = e->call.fname;
@@ -114,14 +142,14 @@ static Value eval_expr(Expr *e) {
                 int  sr = atoi(arg->range.start_cell + 1);
                 int  er = atoi(arg->range.end_cell   + 1);
                 for (char c = sc; c <= ec; ++c) {
-                  for (int r = sr; r <= er; ++r) {
-                    char cell[16];
-                    snprintf(cell, sizeof cell, "%c%d", c, r);
-                    Value v = map_get(cell);
-                    double x = (v.kind == V_FLOAT ? v.fval : v.ival);
-                    vals = realloc(vals, (n+1)*sizeof *vals);
-                    vals[n++] = x;
-                  }
+                    for (int r = sr; r <= er; ++r) {
+                        char cell[16];
+                        snprintf(cell, sizeof cell, "%c%d", c, r);
+                        Value v = map_get(cell);
+                        double x = (v.kind == V_FLOAT ? v.fval : v.ival);
+                        vals = realloc(vals, (n+1)*sizeof *vals);
+                        vals[n++] = x;
+                    }
                 }
             } else {
                 Value v = eval_expr(arg);
@@ -130,37 +158,50 @@ static Value eval_expr(Expr *e) {
                 vals[n++] = x;
             }
         }
+
         if (n == 0) {
             fprintf(stderr, "Erro: chamada %s sem argumentos\n", fn);
             return (Value){.kind=V_INT, .ival = 0};
         }
-        if (strcmp(fn,"SUM")==0) {
-            double acc = 0; for(size_t i=0;i<n;++i) acc+=vals[i];
-            free(vals); return (Value){.kind=V_FLOAT, .fval=acc};
+
+        if (strcmp(fn, "SUM") == 0) {
+            double acc = 0;
+            for (size_t i = 0; i < n; ++i) acc += vals[i];
+            free(vals);
+            return (Value){.kind=V_FLOAT, .fval = acc};
         }
-        if (strcmp(fn,"AVERAGE")==0) {
-            double acc = 0; for(size_t i=0;i<n;++i) acc+=vals[i];
-            free(vals); return (Value){.kind=V_FLOAT, .fval=acc/n};
+        if (strcmp(fn, "AVERAGE") == 0) {
+            double acc = 0;
+            for (size_t i = 0; i < n; ++i) acc += vals[i];
+            free(vals);
+            return (Value){.kind=V_FLOAT, .fval = acc / n};
         }
-        if (strcmp(fn,"MIN")==0) {
-            double m=vals[0]; for(size_t i=1;i<n;++i) if(vals[i]<m)m=vals[i];
-            free(vals); return (Value){.kind=V_FLOAT, .fval=m};
+        if (strcmp(fn, "MIN") == 0) {
+            double m = vals[0];
+            for (size_t i = 1; i < n; ++i) if (vals[i] < m) m = vals[i];
+            free(vals);
+            return (Value){.kind=V_FLOAT, .fval = m};
         }
-        if (strcmp(fn,"MAX")==0) {
-            double m=vals[0]; for(size_t i=1;i<n;++i) if(vals[i]>m)m=vals[i];
-            free(vals); return (Value){.kind=V_FLOAT, .fval=m};
+        if (strcmp(fn, "MAX") == 0) {
+            double m = vals[0];
+            for (size_t i = 1; i < n; ++i) if (vals[i] > m) m = vals[i];
+            free(vals);
+            return (Value){.kind=V_FLOAT, .fval = m};
         }
-        fprintf(stderr,"Erro: função desconhecida %s\n",fn);
+
+        fprintf(stderr, "Erro: função desconhecida %s\n", fn);
         free(vals);
         return (Value){.kind=V_INT, .ival = 0};
       }
       case EXPR_RANGE:
+        // isolado, retorna 0
         return (Value){.kind=V_INT, .ival = 0};
     }
+    // fallback
     return (Value){.kind=V_INT, .ival = 0};
 }
 
-// Executa statements
+// Executa uma lista de statements
 static int interpret_stmt(Stmt *s) {
     while (s) {
         switch (s->kind) {
@@ -171,25 +212,25 @@ static int interpret_stmt(Stmt *s) {
           }
           case STMT_IF: {
             Value c = eval_expr(s->ifs.cond);
-            int cond = (c.kind==V_FLOAT? (int)c.fval : c.ival);
+            int cond = (c.kind == V_FLOAT ? (int)c.fval : c.ival);
             if (cond) interpret_stmt(s->ifs.then_branch);
             break;
           }
           case STMT_WHILE: {
             Value c = eval_expr(s->whiles.cond);
-            int cond = (c.kind==V_FLOAT? (int)c.fval : c.ival);
+            int cond = (c.kind == V_FLOAT ? (int)c.fval : c.ival);
             while (cond) {
                 interpret_stmt(s->whiles.body);
                 c = eval_expr(s->whiles.cond);
-                cond = (c.kind==V_FLOAT? (int)c.fval : c.ival);
+                cond = (c.kind == V_FLOAT ? (int)c.fval : c.ival);
             }
             break;
           }
           case STMT_TABLE: {
             for (Cell *c = cell_map; c; c = c->next) {
-                if (c->val.kind==V_FLOAT)
+                if (c->val.kind == V_FLOAT)
                     printf("%s\t%g\n", c->name, c->val.fval);
-                else if (c->val.kind==V_INT)
+                else if (c->val.kind == V_INT)
                     printf("%s\t%d\n", c->name, c->val.ival);
                 else
                     printf("%s\t%s\n", c->name, c->val.sval);
@@ -200,12 +241,15 @@ static int interpret_stmt(Stmt *s) {
             FILE *f = fopen(s->exp.filename, "w");
             if (!f) { perror("fopen"); return 1; }
             for (Cell *c = cell_map; c; c = c->next) {
-                if (c->val.kind==V_FLOAT)
-                    fprintf(f,"%s,%g\n", c->name, c->val.fval);
-                else if (c->val.kind==V_INT)
-                    fprintf(f,"%s,%d\n", c->name, c->val.ival);
-                else
-                    fprintf(f,"%s,%s\n", c->name, c->val.sval);
+              if (c->val.kind == V_FLOAT) {
+                fprintf(f, "%s,%g\n", c->name, c->val.fval);
+              } else if (c->val.kind == V_INT) {
+                fprintf(f, "%s,%d\n", c->name, c->val.ival);
+              } else {
+                char *esc = csv_escape(c->val.sval);
+                fprintf(f, "%s,%s\n", c->name, esc);
+                free(esc);
+              }
             }
             fclose(f);
             break;

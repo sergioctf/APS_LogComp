@@ -957,7 +957,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 55 "langcell.l"
+#line 54 "langcell.l"
 {
                           yylval.fval = atof(yytext);
                           return FLOAT;
@@ -965,7 +965,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 60 "langcell.l"
+#line 59 "langcell.l"
 {
                           yylval.ival = atoi(yytext);
                           return INT;
@@ -974,7 +974,7 @@ YY_RULE_SETUP
 case 36:
 /* rule 36 can match eol */
 YY_RULE_SETUP
-#line 66 "langcell.l"
+#line 64 "langcell.l"
 {
                           int len = yyleng - 2;
                           char *s = malloc(len + 1);
@@ -987,7 +987,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 77 "langcell.l"
+#line 74 "langcell.l"
 {
                           yylval.sval = strdup(yytext);
                           return CELL;
@@ -995,7 +995,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 83 "langcell.l"
+#line 79 "langcell.l"
 {
                           fprintf(stderr, "Unexpected char: %s\n", yytext);
                           exit(1);
@@ -1003,7 +1003,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 88 "langcell.l"
+#line 84 "langcell.l"
 ECHO;
 	YY_BREAK
 #line 1010 "langcell.lex.c"
@@ -1974,8 +1974,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 88 "langcell.l"
-
-
+#line 84 "langcell.l"
 
 

@@ -1,0 +1,28 @@
+// Aritmética e precedência
+A1 = 1 + 2 * 3;        // 7
+B1 = (1 + 2) * 3;      // 9
+
+// Floats
+A2 = 3.5;
+B2 = A2 * 2;
+
+// Textos e escapes
+C1 = "Olá\nMundo";
+C2 = "Aspas: \"Teste\"";
+
+// Range + funções
+D1 = SUM(A1:B1);
+D2 = AVERAGE(A1:B1, 10);
+D3 = MIN(A1:B2, 5);
+D4 = MAX(A1:B2, 4);
+
+// Condicional
+IF D1 > 5 THEN E1 = D1;
+
+// Loop
+A3 = 0;
+WHILE A3 < 3 { A3 = A3 + 1; }
+
+// Saída e export
+TABLE;
+EXPORT "out.csv";

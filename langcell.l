@@ -51,7 +51,6 @@ extern YYSTYPE yylval;
 "*"                     { return TIMES; }
 "/"                     { return DIVIDE; }
 
-
 [0-9]+\.[0-9]+          {
                           yylval.fval = atof(yytext);
                           return FLOAT;
@@ -62,8 +61,7 @@ extern YYSTYPE yylval;
                           return INT;
                         }
 
-
-\"[^\"]*\"               {
+\"[^\"]*\"              {
                           int len = yyleng - 2;
                           char *s = malloc(len + 1);
                           if (!s) exit(1);
@@ -73,12 +71,10 @@ extern YYSTYPE yylval;
                           return TEXT;
                         }
 
-
 [A-Z][0-9]+             {
                           yylval.sval = strdup(yytext);
                           return CELL;
                         }
-
 
 .                       {
                           fprintf(stderr, "Unexpected char: %s\n", yytext);
@@ -86,5 +82,3 @@ extern YYSTYPE yylval;
                         }
 
 %%
-
-

@@ -1,100 +1,155 @@
 // codegen.cpp
 #include "codegen.h"
-#include <llvm/IR/Verifier.h>
-#include <llvm/ExecutionEngine/Orc/LLJIT.h>
-#include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
+#include "ast.h"
+
+#include <map>
+#include <string>
+#include <vector>
+#include <memory>
+#include <cstdio>
+#include <cstdlib>
+
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Type.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/Support/TargetSelect.h"
+
 using namespace llvm;
-using namespace llvm::orc;
 
-CodeGenContext::CodeGenContext()
-  : module(std::make_unique<Module>("LangCellJIT", context)),
-    builder(context),
-    jit(nullptr)
-{}
+// Contexto e objetos globais do LLVM
+static LLVMContext TheContext;
+static Module     *TheModuleRaw    = nullptr;    // ponteiro bruto para o módulo JIT
+static IRBuilder<> Builder(TheContext);
+static ExecutionEngine *TheExecutionEngine = nullptr;
 
-// Gera a função 'main' e executa
-void CodeGenContext::generateCode(Stmt* root) {
-  Function* mainFn = createMain(root);
-  verifyFunction(*mainFn);
-  // registrar no JIT
-  auto TSM = ThreadSafeModule(std::move(module), std::make_unique<LLVMContext>(context));
-  LLJITBuilder builder;
-  auto J = builder.create();
-  jit = J->get();
-  jit->addIRModule(std::move(TSM));
+// Mapa de células para globals no IR
+static std::map<std::string, GlobalVariable*> CellMap;
+
+// Obtém ou cria uma GlobalVariable double para 'name'
+static GlobalVariable* getCellGV(const std::string &name) {
+    auto it = CellMap.find(name);
+    if (it != CellMap.end())
+        return it->second;
+
+    llvm::Type *doubleTy = llvm::Type::getDoubleTy(TheContext);
+    auto *GV = new GlobalVariable(
+        *TheModuleRaw,        // módulo
+        doubleTy,             // tipo
+        false,                // não é constante
+        GlobalValue::ExternalLinkage,
+        ConstantFP::get(doubleTy, 0.0),
+        name                  // nome da GV
+    );
+    CellMap[name] = GV;
+    return GV;
 }
 
-// Roda via JIT
-void CodeGenContext::run() {
-  auto sym = jit->lookup("main");
-  auto mainPtr = (int (*)())sym.get().getAddress();
-  int result = mainPtr();
-  (void)result;
-}
-
-// Cria a função main que percorre todos os statements
-Function* CodeGenContext::createMain(Stmt* root) {
-  // void main()
-  FunctionType* ftype = FunctionType::get(builder.getInt32Ty(), {}, false);
-  Function* mainFn = Function::Create(ftype, Function::ExternalLinkage, "main", module.get());
-  BasicBlock* entry = BasicBlock::Create(context, "entry", mainFn);
-  builder.SetInsertPoint(entry);
-
-  // gerar cada stmt
-  for (Stmt* s = root; s; s = s->next)
-    genStmt(s);
-
-  builder.CreateRet(builder.getInt32(0));
-  return mainFn;
-}
-
-// Gera código para um statement
-void CodeGenContext::genStmt(Stmt* s) {
-  switch (s->kind) {
-    case STMT_ASSIGN: {
-      // cria variável ou usa existente
-      auto val = genExpr(s->assign.expr);
-      cellVars[s->assign.cell] = val;
-      break;
-    }
-    case STMT_TABLE:
-      // gerar loop para imprimir todas as cellVars
-      break;
-    case STMT_EXPORT:
-      // gerar chamadas para gravar CSV
-      break;
-    case STMT_IF:
-      // gerar bloco condicional
-      break;
-    case STMT_WHILE:
-      // gerar loop while
-      break;
-  }
-}
-
-// Gera uma expressão
-Value* CodeGenContext::genExpr(Expr* e) {
-  switch (e->kind) {
-    case EXPR_INT:
-      return builder.getInt32(e->ival);
-    case EXPR_FLOAT:
-      return ConstantFP::get(builder.getDoubleTy(), e->fval);
-    case EXPR_CELL:
-      return cellVars[e->sval];
-    case EXPR_BINARY: {
-      auto L = genExpr(e->bin.left);
-      auto R = genExpr(e->bin.right);
-      switch (e->bin.op) {
-        case OP_ADD: return builder.CreateAdd(L,R);
-        // … demais ops …
+// Gera IR para uma expressão (tudo como double)
+static Value* codegenExpr(Expr *e) {
+    switch (e->kind) {
+      case EXPR_INT:
+        return ConstantFP::get(
+            llvm::Type::getDoubleTy(TheContext),
+            (double)e->ival
+        );
+      case EXPR_FLOAT:
+        return ConstantFP::get(
+            llvm::Type::getDoubleTy(TheContext),
+            e->fval
+        );
+      case EXPR_CELL: {
+        GlobalVariable *GV = getCellGV(e->sval);
+        // CreateLoad(elementType, ptr, name)
+        return Builder.CreateLoad(
+            GV->getValueType(),
+            GV,
+            e->sval
+        );
       }
+      case EXPR_BINARY: {
+        Value *L = codegenExpr(e->bin.left);
+        Value *R = codegenExpr(e->bin.right);
+        switch (e->bin.op) {
+          case OP_ADD: return Builder.CreateFAdd(L, R, "addtmp");
+          case OP_SUB: return Builder.CreateFSub(L, R, "subtmp");
+          case OP_MUL: return Builder.CreateFMul(L, R, "multmp");
+          case OP_DIV: return Builder.CreateFDiv(L, R, "divtmp");
+          default:     break;
+        }
+      }
+      default:
+        // retornamos 0.0 em casos não suportados
+        return ConstantFP::get(
+            llvm::Type::getDoubleTy(TheContext),
+            0.0
+        );
     }
-    case EXPR_CALL: {
-      // Expandir SUM, AVERAGE, etc.
+}
+
+// Gera IR para cada atribuição na lista de Stmts
+static void codegenStmtList(Stmt *s) {
+    for (; s; s = s->next) {
+        if (s->kind == STMT_ASSIGN) {
+            GlobalVariable *GV = getCellGV(s->assign.cell);
+            Value *val = codegenExpr(s->assign.expr);
+            Builder.CreateStore(val, GV);
+        }
+        // IF, WHILE, TABLE, EXPORT: pendentes de implementação
     }
-    case EXPR_RANGE:
-      // expandir para loop ou array de valores
-    default:
-      return nullptr;
-  }
+}
+
+void init_llvm(const char *module_name) {
+    InitializeNativeTarget();
+    InitializeNativeTargetAsmPrinter();
+    InitializeNativeTargetAsmParser();
+
+    // Cria o módulo e guarda o raw pointer
+    auto M_up = std::make_unique<Module>(module_name, TheContext);
+    TheModuleRaw = M_up.get();
+
+    // Cria o ExecutionEngine, movendo o módulo
+    std::string err;
+    TheExecutionEngine = EngineBuilder(std::move(M_up))
+        .setErrorStr(&err)
+        .setEngineKind(EngineKind::JIT)
+        .create();
+
+    if (!TheExecutionEngine) {
+        std::fprintf(stderr, "Erro criando ExecutionEngine: %s\n", err.c_str());
+        std::exit(1);
+    }
+}
+
+void generate_code(Stmt *program) {
+    // Função double main()
+    llvm::Type *doubleTy = llvm::Type::getDoubleTy(TheContext);
+    FunctionType *FT = FunctionType::get(doubleTy, false);
+    Function *MainF = Function::Create(
+        FT,
+        Function::ExternalLinkage,
+        "main",
+        TheModuleRaw    // use o raw pointer aqui
+    );
+
+    BasicBlock *BB = BasicBlock::Create(TheContext, "entry", MainF);
+    Builder.SetInsertPoint(BB);
+
+    // Gera as atribuições
+    codegenStmtList(program);
+
+    // Retorna 0.0
+    Builder.CreateRet(ConstantFP::get(doubleTy, 0.0));
+}
+
+int run_code() {
+    // Executa main() via JIT
+    Function *F = TheExecutionEngine->FindFunctionNamed("main");
+    std::vector<GenericValue> noargs;
+    GenericValue gv = TheExecutionEngine->runFunction(F, noargs);
+    // Pega o valor double e converte pra int
+    return (int)gv.DoubleVal;
 }
