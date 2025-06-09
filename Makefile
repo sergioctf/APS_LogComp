@@ -3,24 +3,14 @@ LEX       := flex
 YACC      := bison
 CC        := gcc
 CXX       := g++
-
-# Flags de compilação e linkedição
-CFLAGS        := -Wall -Wextra -g
+CFLAGS    := -Wall -Wextra -g
 LLVM_CXXFLAGS := $(shell llvm-config --cxxflags)
 LLVM_LDFLAGS  := $(shell llvm-config --libs core mcjit native) -ldl -lpthread
 
 CXXFLAGS := $(CFLAGS) $(LLVM_CXXFLAGS)
 LDFLAGS  := -lfl $(LLVM_LDFLAGS)
 
-# Objetos
-OBJS := \
-	main.o \
-	sema.o \
-	langcell.tab.o \
-	langcell.lex.o \
-	ast.o \
-	interp.o \
-	codegen.o
+OBJS := main.o sema.o langcell.tab.o langcell.lex.o ast.o interp.o codegen.o
 
 .PHONY: all clean
 all: langcell
@@ -28,7 +18,6 @@ all: langcell
 langcell: $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
-# Flex/Bison
 langcell.tab.c langcell.tab.h: langcell.y
 	$(YACC) -d -o langcell.tab.c langcell.y
 
@@ -41,7 +30,6 @@ langcell.tab.o: langcell.tab.c
 langcell.lex.o: langcell.lex.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compilação de módulos C
 ast.o: ast.c ast.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -51,7 +39,6 @@ interp.o: interp.c ast.h
 sema.o: sema.c sema.h ast.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compilação de módulos C++
 main.o: main.cpp ast.h sema.h codegen.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 

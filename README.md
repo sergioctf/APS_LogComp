@@ -1,4 +1,3 @@
-
 # APS de Lógica Computacional 2025.1 — Insper  
 ## Sérgio Carmelo Tôrres Filho — Engenharia da Computação  
 
@@ -6,136 +5,129 @@
 
 # LangCell
 
-**LangCell** é uma linguagem de programação inspirada no Excel, onde toda variável é uma célula (A1, B2, …) e fórmulas, loops e condicionais se comportam exatamente como em uma planilha “viva”.
+**LangCell** é uma mini-linguagem de programação inspirada em planilhas, em que cada variável é uma “célula” (A1, B2, …) e é possível usar expressões, condicionais, loops e imprimir tudo em tabela.
 
 ---
 
-## Principais Recursos
+## Recursos Implementados
 
-- **Células como variáveis**: `A1`, `B2`, …  
-- **Valores**:  
+- **Variáveis** (células) do tipo `double`:  
   - Inteiros (`123`)  
-  - **Floats** (`3.14`)  
-  - **Textos** entre aspas (`"Hello"`)  
+  - Float (`3.14`)  
 - **Operadores Aritméticos**: `+`, `-`, `*`, `/`  
-- **Funções de Planilha**: `SUM()`, `AVERAGE()`, `MIN()`, `MAX()`  
-- **Ranges**: `SUM(A1:A10)`, `AVERAGE(B2:D2)`  
-- **Comparadores**: `>`, `<`, `>=`, `<=`, `==`, `!=`  
-- **Operadores Lógicos**: `NOT`, `AND`, `OR`  
-- **Comentários**:  
-  - Linha única: `// comentário`  
-  - Bloco: `/* comentário */`  
-- **Condicionais**: `IF <expr> THEN <statement> …`  
-- **Laços**: `WHILE <expr> { … }`  
-- **PRINT de Planilha**: `TABLE;` → Imprime no terminal em formato tabular  
-- **Exportação CSV**: `EXPORT "arquivo.csv";` → Salva o estado atual em CSV  
+- **Condicionais**:  
+```
 
----
+IF <expr> THEN <statement-block>
 
-## Gramática (EBNF)
+```
+- **Laços**:  
+```
 
-```ebnf
-<program> ::= { <comment> | <statement> }
+WHILE <expr> { … }
 
-<statement> ::=
-      <assignment-statement>
-    | <if-statement>
-    | <while-statement>
-    | <table-statement>
-    | <export-statement>
+```
+- **Impressão em formato tabular**:  
+```
 
-<assignment-statement> ::= <cell> "=" <expression> ";"
+TABLE;
 
-<if-statement>       ::= "IF" <expression> "THEN" <statement-block>
-<while-statement>    ::= "WHILE" <expression> <statement-block>
-<table-statement>    ::= "TABLE" ";"
-<export-statement>   ::= "EXPORT" <text> ";"
-
-<statement-block> ::= <statement>
-                   | "{" { <statement> } "}"
-
-<comment> ::=
-      "//" { <character_except_newline> } "\n"
-    | "/*" { <character> } "*/"
-
-<expression>      ::= <logical-or>
-<logical-or>      ::= <logical-and> { "OR" <logical-and> }
-<logical-and>     ::= <comparison>  { "AND" <comparison> }
-<comparison>      ::= <addition-subtraction> { <comparator> <addition-subtraction> }
-<addition-subtraction> ::= <multiplication-division> { ("+" | "-") <multiplication-division> }
-<multiplication-division> ::= <factor> { ("*" | "/") <factor> }
-
-<factor> ::=
-      <number>
-    | <text>
-    | <cell>
-    | <function-call>
-    | "(" <expression> ")"
-
-<function-call>    ::= <function-name> "(" <expression-list> ")"
-<function-name>    ::= "SUM" | "AVERAGE" | "MIN" | "MAX"
-
-<expression-list>  ::= <expression-or-range> { "," <expression-or-range> }
-<expression-or-range> ::= <expression>
-                       | <cell> ":" <cell>
-
-<cell>   ::= <letter> <number>
-<letter> ::= "A" | "B" | … | "Z"
-
-<number> ::= <integer> | <float>
-<integer>::= <digit> { <digit> }
-<float>  ::= <digit> { <digit> } "." <digit> { <digit> }
-<digit>  ::= "0" | "1" | … | "9"
-
-<text>   ::= '"' { <character> } '"'
-<character> ::= qualquer caractere imprimível exceto '"'
-
-<comparator> ::= ">" | "<" | ">=" | "<=" | "==" | "!="
 ````
 
 ---
 
-## Exemplos de Uso
+## Gramática (EBNF resumida)
 
-```langcell
-// Atribuições simples e floats
-A1 = 3.14;
-B1 = 2;
-C1 = A1 * B1;
+```ebnf
+<program>        ::= { <statement> }
 
-// Ranges e funções
-D1 = SUM(A1:A3, 10);
-E1 = AVERAGE(B1:B3);
+<statement>      ::= <assign> ";" 
+                 | "IF" <expr> "THEN" <block>
+                 | "WHILE" <expr> <block>
+                 | "TABLE" ";"
 
-// Comparações e lógicos
-IF D1 >= 20 AND NOT (B1 == 0) THEN {
-  F1 = D1 / B1;
+<assign>         ::= <cell> "=" <expr>
+
+<block>          ::= <statement>
+                 | "{" { <statement> } "}"
+
+<expr>           ::= <expr> "+" <term> 
+                 | <expr> "-" <term> 
+                 | <term>
+
+<term>           ::= <term> "*" <factor> 
+                 | <term> "/" <factor> 
+                 | <factor>
+
+<factor>         ::= <number> 
+                 | <cell> 
+                 | "(" <expr> ")"
+
+<cell>           ::= [A–Z]+ [0–9]+
+<number>         ::= integer | float
+````
+
+---
+
+## Exemplos
+
+```lc
+// 1) Atribuições e operações
+A1 = 1;
+A2 = 2;
+B1 = A1 + A2;
+
+// 2) Condicional
+IF A1 - A2 THEN {
+  C1 = A1 * A2;
 }
 
-// Loop
-WHILE A1 < 10 {
-  A1 = A1 + 0.5;
+// 3) Loop
+WHILE A1 < 5 {
+  A1 = A1 + 1;
 }
 
-// Imprime tabela formatada
+// 4) Imprime tudo em tabela
 TABLE;
+```
 
-// Exporta para CSV
-EXPORT "planilha.csv";
+Saída esperada:
+
+```
+A1    5
+A2    2
+B1    3
+C1    2
 ```
 
 ---
 
-## Status das Entregas
+## Status das Tarefas
 
-| Tarefa       | Descrição                                                  | Status                                                                                        |
-| ------------ | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Tarefa 1** | Definição da proposta, gramática EBNF e exemplos de uso    | ✅ Concluída                                                                                   |
-| **Tarefa 2** | Implementação de análise léxica (Flex) e sintática (Bison) | ✅ Concluída — compilador aceita gramática e retorna código 0 em casos válidos, 1 em inválidos |
-
-> **Próxima etapa**: Tarefa 3 — Análise semântica (construção de AST, checagem de tipos e avaliação de expressões).
-
----
+| Tarefa | Descrição                                                       | Status      |
+| ------ | --------------------------------------------------------------- | ----------- |
+| 1      | Gramática EBNF                                                  | ✅ Concluída |
+| 2      | Análise Léxica (Flex) e Sintática (Bison)                       | ✅ Concluída |
+| 3      | Semântica + geração de código/execução com LLVM MCJIT           | ✅ Concluída |
+| 4      | Testes de exemplo (demo2.lc, test\_suite.lc, validos/invalidos) | ✅ Concluída |
+| 5      | Apresentação (slides com motivação, características e exemplos) | ⏳ Pendente  |
 
 **Entrega final**: 10/Jun/2025
 
+---
+
+## Como usar
+
+1. **Build**
+
+   ```bash
+   make
+   ```
+2. **Testar um programa**
+
+   ```bash
+   ./langcell < demo2.lc
+   ```
+3. **Adicionar novos casos de teste**
+
+   * coloque em `validos/` ou `invalidos/` e ajuste `test_suite.lc`

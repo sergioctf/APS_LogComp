@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 2 "langcell.y"
+#line 6 "langcell.y"
 
  #include <stdio.h>
  #include <stdlib.h>
@@ -359,7 +359,7 @@ typedef int yy_state_fast_t;
 
 #define YY_ASSERT(E) ((void) (0 && (E)))
 
-#if !defined yyoverflow
+#if 1
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
@@ -424,7 +424,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 # endif
-#endif /* !defined yyoverflow */
+#endif /* 1 */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
@@ -551,18 +551,18 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    62,    62,    67,    68,    73,    75,    77,    79,    81,
-      87,    89,    95,   101,   103,   109,   111,   117,   119,   121,
-     123,   125,   127,   129,   135,   137,   139,   145,   147,   149,
-     155,   157,   159,   165,   167,   169,   171,   173,   175,   177,
-     179,   181,   187,   189,   195,   197
+       0,    66,    66,    71,    72,    77,    79,    81,    83,    85,
+      91,    93,    99,   105,   107,   113,   115,   121,   123,   125,
+     127,   129,   131,   133,   139,   141,   143,   149,   151,   153,
+     159,   161,   163,   169,   171,   173,   175,   177,   179,   181,
+     183,   185,   191,   193,   199,   201
 };
 #endif
 
 /** Accessing symbol of state STATE.  */
 #define YY_ACCESSING_SYMBOL(State) YY_CAST (yysymbol_kind_t, yystos[State])
 
-#if YYDEBUG || 0
+#if 1
 /* The user-facing name of the symbol whose (internal) number is
    YYSYMBOL.  No bounds checking.  */
 static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
@@ -892,8 +892,275 @@ int yydebug;
 #endif
 
 
+/* Context of a parse error.  */
+typedef struct
+{
+  yy_state_t *yyssp;
+  yysymbol_kind_t yytoken;
+} yypcontext_t;
+
+/* Put in YYARG at most YYARGN of the expected tokens given the
+   current YYCTX, and return the number of tokens stored in YYARG.  If
+   YYARG is null, return the number of expected tokens (guaranteed to
+   be less than YYNTOKENS).  Return YYENOMEM on memory exhaustion.
+   Return 0 if there are more than YYARGN expected tokens, yet fill
+   YYARG up to YYARGN. */
+static int
+yypcontext_expected_tokens (const yypcontext_t *yyctx,
+                            yysymbol_kind_t yyarg[], int yyargn)
+{
+  /* Actual size of YYARG. */
+  int yycount = 0;
+  int yyn = yypact[+*yyctx->yyssp];
+  if (!yypact_value_is_default (yyn))
+    {
+      /* Start YYX at -YYN if negative to avoid negative indexes in
+         YYCHECK.  In other words, skip the first -YYN actions for
+         this state because they are default actions.  */
+      int yyxbegin = yyn < 0 ? -yyn : 0;
+      /* Stay within bounds of both yycheck and yytname.  */
+      int yychecklim = YYLAST - yyn + 1;
+      int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+      int yyx;
+      for (yyx = yyxbegin; yyx < yyxend; ++yyx)
+        if (yycheck[yyx + yyn] == yyx && yyx != YYSYMBOL_YYerror
+            && !yytable_value_is_error (yytable[yyx + yyn]))
+          {
+            if (!yyarg)
+              ++yycount;
+            else if (yycount == yyargn)
+              return 0;
+            else
+              yyarg[yycount++] = YY_CAST (yysymbol_kind_t, yyx);
+          }
+    }
+  if (yyarg && yycount == 0 && 0 < yyargn)
+    yyarg[0] = YYSYMBOL_YYEMPTY;
+  return yycount;
+}
 
 
+
+
+#ifndef yystrlen
+# if defined __GLIBC__ && defined _STRING_H
+#  define yystrlen(S) (YY_CAST (YYPTRDIFF_T, strlen (S)))
+# else
+/* Return the length of YYSTR.  */
+static YYPTRDIFF_T
+yystrlen (const char *yystr)
+{
+  YYPTRDIFF_T yylen;
+  for (yylen = 0; yystr[yylen]; yylen++)
+    continue;
+  return yylen;
+}
+# endif
+#endif
+
+#ifndef yystpcpy
+# if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
+#  define yystpcpy stpcpy
+# else
+/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
+   YYDEST.  */
+static char *
+yystpcpy (char *yydest, const char *yysrc)
+{
+  char *yyd = yydest;
+  const char *yys = yysrc;
+
+  while ((*yyd++ = *yys++) != '\0')
+    continue;
+
+  return yyd - 1;
+}
+# endif
+#endif
+
+#ifndef yytnamerr
+/* Copy to YYRES the contents of YYSTR after stripping away unnecessary
+   quotes and backslashes, so that it's suitable for yyerror.  The
+   heuristic is that double-quoting is unnecessary unless the string
+   contains an apostrophe, a comma, or backslash (other than
+   backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
+   null, do not copy; instead, return the length of what the result
+   would have been.  */
+static YYPTRDIFF_T
+yytnamerr (char *yyres, const char *yystr)
+{
+  if (*yystr == '"')
+    {
+      YYPTRDIFF_T yyn = 0;
+      char const *yyp = yystr;
+      for (;;)
+        switch (*++yyp)
+          {
+          case '\'':
+          case ',':
+            goto do_not_strip_quotes;
+
+          case '\\':
+            if (*++yyp != '\\')
+              goto do_not_strip_quotes;
+            else
+              goto append;
+
+          append:
+          default:
+            if (yyres)
+              yyres[yyn] = *yyp;
+            yyn++;
+            break;
+
+          case '"':
+            if (yyres)
+              yyres[yyn] = '\0';
+            return yyn;
+          }
+    do_not_strip_quotes: ;
+    }
+
+  if (yyres)
+    return yystpcpy (yyres, yystr) - yyres;
+  else
+    return yystrlen (yystr);
+}
+#endif
+
+
+static int
+yy_syntax_error_arguments (const yypcontext_t *yyctx,
+                           yysymbol_kind_t yyarg[], int yyargn)
+{
+  /* Actual size of YYARG. */
+  int yycount = 0;
+  /* There are many possibilities here to consider:
+     - If this state is a consistent state with a default action, then
+       the only way this function was invoked is if the default action
+       is an error action.  In that case, don't check for expected
+       tokens because there are none.
+     - The only way there can be no lookahead present (in yychar) is if
+       this state is a consistent state with a default action.  Thus,
+       detecting the absence of a lookahead is sufficient to determine
+       that there is no unexpected or expected token to report.  In that
+       case, just report a simple "syntax error".
+     - Don't assume there isn't a lookahead just because this state is a
+       consistent state with a default action.  There might have been a
+       previous inconsistent state, consistent state with a non-default
+       action, or user semantic action that manipulated yychar.
+     - Of course, the expected token list depends on states to have
+       correct lookahead information, and it depends on the parser not
+       to perform extra reductions after fetching a lookahead from the
+       scanner and before detecting a syntax error.  Thus, state merging
+       (from LALR or IELR) and default reductions corrupt the expected
+       token list.  However, the list is correct for canonical LR with
+       one exception: it will still contain any token that will not be
+       accepted due to an error action in a later state.
+  */
+  if (yyctx->yytoken != YYSYMBOL_YYEMPTY)
+    {
+      int yyn;
+      if (yyarg)
+        yyarg[yycount] = yyctx->yytoken;
+      ++yycount;
+      yyn = yypcontext_expected_tokens (yyctx,
+                                        yyarg ? yyarg + 1 : yyarg, yyargn - 1);
+      if (yyn == YYENOMEM)
+        return YYENOMEM;
+      else
+        yycount += yyn;
+    }
+  return yycount;
+}
+
+/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
+   about the unexpected token YYTOKEN for the state stack whose top is
+   YYSSP.
+
+   Return 0 if *YYMSG was successfully written.  Return -1 if *YYMSG is
+   not large enough to hold the message.  In that case, also set
+   *YYMSG_ALLOC to the required number of bytes.  Return YYENOMEM if the
+   required number of bytes is too large to store.  */
+static int
+yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
+                const yypcontext_t *yyctx)
+{
+  enum { YYARGS_MAX = 5 };
+  /* Internationalized format string. */
+  const char *yyformat = YY_NULLPTR;
+  /* Arguments of yyformat: reported tokens (one for the "unexpected",
+     one per "expected"). */
+  yysymbol_kind_t yyarg[YYARGS_MAX];
+  /* Cumulated lengths of YYARG.  */
+  YYPTRDIFF_T yysize = 0;
+
+  /* Actual size of YYARG. */
+  int yycount = yy_syntax_error_arguments (yyctx, yyarg, YYARGS_MAX);
+  if (yycount == YYENOMEM)
+    return YYENOMEM;
+
+  switch (yycount)
+    {
+#define YYCASE_(N, S)                       \
+      case N:                               \
+        yyformat = S;                       \
+        break
+    default: /* Avoid compiler warnings. */
+      YYCASE_(0, YY_("syntax error"));
+      YYCASE_(1, YY_("syntax error, unexpected %s"));
+      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+#undef YYCASE_
+    }
+
+  /* Compute error message size.  Don't count the "%s"s, but reserve
+     room for the terminator.  */
+  yysize = yystrlen (yyformat) - 2 * yycount + 1;
+  {
+    int yyi;
+    for (yyi = 0; yyi < yycount; ++yyi)
+      {
+        YYPTRDIFF_T yysize1
+          = yysize + yytnamerr (YY_NULLPTR, yytname[yyarg[yyi]]);
+        if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
+          yysize = yysize1;
+        else
+          return YYENOMEM;
+      }
+  }
+
+  if (*yymsg_alloc < yysize)
+    {
+      *yymsg_alloc = 2 * yysize;
+      if (! (yysize <= *yymsg_alloc
+             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
+        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
+      return -1;
+    }
+
+  /* Avoid sprintf, as that infringes on the user's name space.
+     Don't have undefined behavior even if the translation
+     produced a string with the wrong number of "%s"s.  */
+  {
+    char *yyp = *yymsg;
+    int yyi = 0;
+    while ((*yyp = *yyformat) != '\0')
+      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
+        {
+          yyp += yytnamerr (yyp, yytname[yyarg[yyi++]]);
+          yyformat += 2;
+        }
+      else
+        {
+          ++yyp;
+          ++yyformat;
+        }
+  }
+  return 0;
+}
 
 
 /*-----------------------------------------------.
@@ -962,7 +1229,10 @@ yyparse (void)
      action routines.  */
   YYSTYPE yyval;
 
-
+  /* Buffer for error messages, and its allocated size.  */
+  char yymsgbuf[128];
+  char *yymsg = yymsgbuf;
+  YYPTRDIFF_T yymsg_alloc = sizeof yymsgbuf;
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
@@ -1173,273 +1443,273 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: program  */
-#line 62 "langcell.y"
+#line 66 "langcell.y"
                            { program_root = (yyvsp[0].stmt_list); }
-#line 1179 "langcell.tab.c"
+#line 1449 "langcell.tab.c"
     break;
 
   case 3: /* program: %empty  */
-#line 67 "langcell.y"
+#line 71 "langcell.y"
                            { (yyval.stmt_list) = NULL; }
-#line 1185 "langcell.tab.c"
+#line 1455 "langcell.tab.c"
     break;
 
   case 4: /* program: program statement  */
-#line 68 "langcell.y"
+#line 72 "langcell.y"
                            { (yyval.stmt_list) = stmt_append((yyvsp[-1].stmt_list), (yyvsp[0].stmt)); }
-#line 1191 "langcell.tab.c"
+#line 1461 "langcell.tab.c"
     break;
 
   case 5: /* statement: CELL ASSIGN expression SEMI  */
-#line 74 "langcell.y"
+#line 78 "langcell.y"
         { (yyval.stmt) = make_assign_stmt((yyvsp[-3].sval), (yyvsp[-1].expr)); }
-#line 1197 "langcell.tab.c"
+#line 1467 "langcell.tab.c"
     break;
 
   case 6: /* statement: IF expression THEN statement_block  */
-#line 76 "langcell.y"
+#line 80 "langcell.y"
         { (yyval.stmt) = make_if_stmt((yyvsp[-2].expr), (yyvsp[0].stmt)); }
-#line 1203 "langcell.tab.c"
+#line 1473 "langcell.tab.c"
     break;
 
   case 7: /* statement: WHILE expression statement_block  */
-#line 78 "langcell.y"
+#line 82 "langcell.y"
         { (yyval.stmt) = make_while_stmt((yyvsp[-1].expr), (yyvsp[0].stmt)); }
-#line 1209 "langcell.tab.c"
+#line 1479 "langcell.tab.c"
     break;
 
   case 8: /* statement: TABLE SEMI  */
-#line 80 "langcell.y"
+#line 84 "langcell.y"
         { (yyval.stmt) = make_table_stmt(); }
-#line 1215 "langcell.tab.c"
+#line 1485 "langcell.tab.c"
     break;
 
   case 9: /* statement: EXPORT TEXT SEMI  */
-#line 82 "langcell.y"
+#line 86 "langcell.y"
         { (yyval.stmt) = make_export_stmt((yyvsp[-1].sval)); }
-#line 1221 "langcell.tab.c"
+#line 1491 "langcell.tab.c"
     break;
 
   case 10: /* statement_block: statement  */
-#line 88 "langcell.y"
+#line 92 "langcell.y"
         { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 1227 "langcell.tab.c"
+#line 1497 "langcell.tab.c"
     break;
 
   case 11: /* statement_block: LBRACE program RBRACE  */
-#line 90 "langcell.y"
+#line 94 "langcell.y"
         { (yyval.stmt) = (yyvsp[-1].stmt_list); }
-#line 1233 "langcell.tab.c"
+#line 1503 "langcell.tab.c"
     break;
 
   case 12: /* expression: logical_or  */
-#line 96 "langcell.y"
+#line 100 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1239 "langcell.tab.c"
+#line 1509 "langcell.tab.c"
     break;
 
   case 13: /* logical_or: logical_and  */
-#line 102 "langcell.y"
+#line 106 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1245 "langcell.tab.c"
+#line 1515 "langcell.tab.c"
     break;
 
   case 14: /* logical_or: logical_or OR logical_and  */
-#line 104 "langcell.y"
+#line 108 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_OR, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1251 "langcell.tab.c"
+#line 1521 "langcell.tab.c"
     break;
 
   case 15: /* logical_and: comparison  */
-#line 110 "langcell.y"
+#line 114 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1257 "langcell.tab.c"
+#line 1527 "langcell.tab.c"
     break;
 
   case 16: /* logical_and: logical_and AND comparison  */
-#line 112 "langcell.y"
+#line 116 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_AND, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1263 "langcell.tab.c"
+#line 1533 "langcell.tab.c"
     break;
 
   case 17: /* comparison: addition_subtraction  */
-#line 118 "langcell.y"
+#line 122 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1269 "langcell.tab.c"
+#line 1539 "langcell.tab.c"
     break;
 
   case 18: /* comparison: comparison GT addition_subtraction  */
-#line 120 "langcell.y"
+#line 124 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_GT, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1275 "langcell.tab.c"
+#line 1545 "langcell.tab.c"
     break;
 
   case 19: /* comparison: comparison LT addition_subtraction  */
-#line 122 "langcell.y"
+#line 126 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_LT, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1281 "langcell.tab.c"
+#line 1551 "langcell.tab.c"
     break;
 
   case 20: /* comparison: comparison GE addition_subtraction  */
-#line 124 "langcell.y"
+#line 128 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_GE, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1287 "langcell.tab.c"
+#line 1557 "langcell.tab.c"
     break;
 
   case 21: /* comparison: comparison LE addition_subtraction  */
-#line 126 "langcell.y"
+#line 130 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_LE, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1293 "langcell.tab.c"
+#line 1563 "langcell.tab.c"
     break;
 
   case 22: /* comparison: comparison EQ addition_subtraction  */
-#line 128 "langcell.y"
+#line 132 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_EQ, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1299 "langcell.tab.c"
+#line 1569 "langcell.tab.c"
     break;
 
   case 23: /* comparison: comparison NE addition_subtraction  */
-#line 130 "langcell.y"
+#line 134 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_NE, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1305 "langcell.tab.c"
+#line 1575 "langcell.tab.c"
     break;
 
   case 24: /* addition_subtraction: multiplication_division  */
-#line 136 "langcell.y"
+#line 140 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1311 "langcell.tab.c"
+#line 1581 "langcell.tab.c"
     break;
 
   case 25: /* addition_subtraction: addition_subtraction PLUS multiplication_division  */
-#line 138 "langcell.y"
+#line 142 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_ADD, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1317 "langcell.tab.c"
+#line 1587 "langcell.tab.c"
     break;
 
   case 26: /* addition_subtraction: addition_subtraction MINUS multiplication_division  */
-#line 140 "langcell.y"
+#line 144 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_SUB, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1323 "langcell.tab.c"
+#line 1593 "langcell.tab.c"
     break;
 
   case 27: /* multiplication_division: unary  */
-#line 146 "langcell.y"
+#line 150 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1329 "langcell.tab.c"
+#line 1599 "langcell.tab.c"
     break;
 
   case 28: /* multiplication_division: multiplication_division TIMES unary  */
-#line 148 "langcell.y"
+#line 152 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_MUL, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1335 "langcell.tab.c"
+#line 1605 "langcell.tab.c"
     break;
 
   case 29: /* multiplication_division: multiplication_division DIVIDE unary  */
-#line 150 "langcell.y"
+#line 154 "langcell.y"
         { (yyval.expr) = make_binary_expr(OP_DIV, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 1341 "langcell.tab.c"
+#line 1611 "langcell.tab.c"
     break;
 
   case 30: /* unary: NOT unary  */
-#line 156 "langcell.y"
+#line 160 "langcell.y"
         { (yyval.expr) = make_unary_expr(OP_NOT, (yyvsp[0].expr)); }
-#line 1347 "langcell.tab.c"
+#line 1617 "langcell.tab.c"
     break;
 
   case 31: /* unary: MINUS unary  */
-#line 158 "langcell.y"
+#line 162 "langcell.y"
         { (yyval.expr) = make_unary_expr(OP_NEG, (yyvsp[0].expr)); }
-#line 1353 "langcell.tab.c"
+#line 1623 "langcell.tab.c"
     break;
 
   case 32: /* unary: primary  */
-#line 160 "langcell.y"
+#line 164 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1359 "langcell.tab.c"
+#line 1629 "langcell.tab.c"
     break;
 
   case 33: /* primary: INT  */
-#line 166 "langcell.y"
+#line 170 "langcell.y"
         { (yyval.expr) = make_int_expr((yyvsp[0].ival)); }
-#line 1365 "langcell.tab.c"
+#line 1635 "langcell.tab.c"
     break;
 
   case 34: /* primary: FLOAT  */
-#line 168 "langcell.y"
+#line 172 "langcell.y"
         { (yyval.expr) = make_float_expr((yyvsp[0].fval)); }
-#line 1371 "langcell.tab.c"
+#line 1641 "langcell.tab.c"
     break;
 
   case 35: /* primary: TEXT  */
-#line 170 "langcell.y"
+#line 174 "langcell.y"
         { (yyval.expr) = make_text_expr((yyvsp[0].sval)); }
-#line 1377 "langcell.tab.c"
+#line 1647 "langcell.tab.c"
     break;
 
   case 36: /* primary: CELL  */
-#line 172 "langcell.y"
+#line 176 "langcell.y"
         { (yyval.expr) = make_cell_expr((yyvsp[0].sval)); }
-#line 1383 "langcell.tab.c"
+#line 1653 "langcell.tab.c"
     break;
 
   case 37: /* primary: SUM LPAREN expression_list RPAREN  */
-#line 174 "langcell.y"
+#line 178 "langcell.y"
         { (yyval.expr) = make_call_expr("SUM",     (yyvsp[-1].expr_list)); }
-#line 1389 "langcell.tab.c"
+#line 1659 "langcell.tab.c"
     break;
 
   case 38: /* primary: AVERAGE LPAREN expression_list RPAREN  */
-#line 176 "langcell.y"
+#line 180 "langcell.y"
         { (yyval.expr) = make_call_expr("AVERAGE", (yyvsp[-1].expr_list)); }
-#line 1395 "langcell.tab.c"
+#line 1665 "langcell.tab.c"
     break;
 
   case 39: /* primary: MIN LPAREN expression_list RPAREN  */
-#line 178 "langcell.y"
+#line 182 "langcell.y"
         { (yyval.expr) = make_call_expr("MIN",     (yyvsp[-1].expr_list)); }
-#line 1401 "langcell.tab.c"
+#line 1671 "langcell.tab.c"
     break;
 
   case 40: /* primary: MAX LPAREN expression_list RPAREN  */
-#line 180 "langcell.y"
+#line 184 "langcell.y"
         { (yyval.expr) = make_call_expr("MAX",     (yyvsp[-1].expr_list)); }
-#line 1407 "langcell.tab.c"
+#line 1677 "langcell.tab.c"
     break;
 
   case 41: /* primary: LPAREN expression RPAREN  */
-#line 182 "langcell.y"
+#line 186 "langcell.y"
         { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1413 "langcell.tab.c"
+#line 1683 "langcell.tab.c"
     break;
 
   case 42: /* expression_list: expression_or_range  */
-#line 188 "langcell.y"
+#line 192 "langcell.y"
         { (yyval.expr_list) = (yyvsp[0].expr); }
-#line 1419 "langcell.tab.c"
+#line 1689 "langcell.tab.c"
     break;
 
   case 43: /* expression_list: expression_list COMMA expression_or_range  */
-#line 190 "langcell.y"
+#line 194 "langcell.y"
         { (yyval.expr_list) = expr_append((yyvsp[-2].expr_list), (yyvsp[0].expr)); }
-#line 1425 "langcell.tab.c"
+#line 1695 "langcell.tab.c"
     break;
 
   case 44: /* expression_or_range: expression  */
-#line 196 "langcell.y"
+#line 200 "langcell.y"
         { (yyval.expr) = (yyvsp[0].expr); }
-#line 1431 "langcell.tab.c"
+#line 1701 "langcell.tab.c"
     break;
 
   case 45: /* expression_or_range: CELL COLON CELL  */
-#line 198 "langcell.y"
+#line 202 "langcell.y"
        {
          (yyval.expr) = make_range_expr((yyvsp[-2].sval), (yyvsp[0].sval));
        }
-#line 1439 "langcell.tab.c"
+#line 1709 "langcell.tab.c"
     break;
 
 
-#line 1443 "langcell.tab.c"
+#line 1713 "langcell.tab.c"
 
       default: break;
     }
@@ -1486,7 +1756,37 @@ yyerrlab:
   if (!yyerrstatus)
     {
       ++yynerrs;
-      yyerror (YY_("syntax error"));
+      {
+        yypcontext_t yyctx
+          = {yyssp, yytoken};
+        char const *yymsgp = YY_("syntax error");
+        int yysyntax_error_status;
+        yysyntax_error_status = yysyntax_error (&yymsg_alloc, &yymsg, &yyctx);
+        if (yysyntax_error_status == 0)
+          yymsgp = yymsg;
+        else if (yysyntax_error_status == -1)
+          {
+            if (yymsg != yymsgbuf)
+              YYSTACK_FREE (yymsg);
+            yymsg = YY_CAST (char *,
+                             YYSTACK_ALLOC (YY_CAST (YYSIZE_T, yymsg_alloc)));
+            if (yymsg)
+              {
+                yysyntax_error_status
+                  = yysyntax_error (&yymsg_alloc, &yymsg, &yyctx);
+                yymsgp = yymsg;
+              }
+            else
+              {
+                yymsg = yymsgbuf;
+                yymsg_alloc = sizeof yymsgbuf;
+                yysyntax_error_status = YYENOMEM;
+              }
+          }
+        yyerror (yymsgp);
+        if (yysyntax_error_status == YYENOMEM)
+          YYNOMEM;
+      }
     }
 
   if (yyerrstatus == 3)
@@ -1628,9 +1928,10 @@ yyreturnlab:
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-
+  if (yymsg != yymsgbuf)
+    YYSTACK_FREE (yymsg);
   return yyresult;
 }
 
-#line 203 "langcell.y"
+#line 207 "langcell.y"
 

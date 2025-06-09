@@ -1,4 +1,8 @@
 /* langcell.y */
+
+%debug
+%define parse.error verbose
+
  %{
  #include <stdio.h>
  #include <stdlib.h>
