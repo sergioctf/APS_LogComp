@@ -1,4 +1,5 @@
 %{
+#include "ast.h"
 #include "langcell.tab.h"
 #include <stdlib.h>
 #include <string.h>

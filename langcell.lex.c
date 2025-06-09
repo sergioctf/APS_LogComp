@@ -504,15 +504,16 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "langcell.l"
 #line 2 "langcell.l"
+#include "ast.h"
 #include "langcell.tab.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 extern YYSTYPE yylval;
-#line 514 "langcell.lex.c"
+#line 515 "langcell.lex.c"
 #define YY_NO_INPUT 1
-#line 516 "langcell.lex.c"
+#line 517 "langcell.lex.c"
 
 #define INITIAL 0
 
@@ -727,10 +728,10 @@ YY_DECL
 		}
 
 	{
-#line 12 "langcell.l"
+#line 13 "langcell.l"
 
 
-#line 734 "langcell.lex.c"
+#line 735 "langcell.lex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -789,174 +790,174 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 14 "langcell.l"
+#line 15 "langcell.l"
 { /* ignora comentário de linha */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 15 "langcell.l"
+#line 16 "langcell.l"
 { /* ignora comentário de bloco */ }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 16 "langcell.l"
+#line 17 "langcell.l"
 { /* ignora espaços em branco */ }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 18 "langcell.l"
+#line 19 "langcell.l"
 { return IF; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 19 "langcell.l"
+#line 20 "langcell.l"
 { return THEN; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 20 "langcell.l"
+#line 21 "langcell.l"
 { return WHILE; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 21 "langcell.l"
+#line 22 "langcell.l"
 { return TABLE; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 22 "langcell.l"
+#line 23 "langcell.l"
 { return EXPORT; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 24 "langcell.l"
+#line 25 "langcell.l"
 { return SUM; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 25 "langcell.l"
+#line 26 "langcell.l"
 { return AVERAGE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 26 "langcell.l"
+#line 27 "langcell.l"
 { return MIN; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 27 "langcell.l"
+#line 28 "langcell.l"
 { return MAX; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 29 "langcell.l"
+#line 30 "langcell.l"
 { return AND; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 30 "langcell.l"
+#line 31 "langcell.l"
 { return OR; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 31 "langcell.l"
+#line 32 "langcell.l"
 { return NOT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 33 "langcell.l"
+#line 34 "langcell.l"
 { return GE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 34 "langcell.l"
+#line 35 "langcell.l"
 { return LE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 35 "langcell.l"
+#line 36 "langcell.l"
 { return EQ; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 36 "langcell.l"
+#line 37 "langcell.l"
 { return NE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 37 "langcell.l"
+#line 38 "langcell.l"
 { return GT; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 38 "langcell.l"
+#line 39 "langcell.l"
 { return LT; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 40 "langcell.l"
+#line 41 "langcell.l"
 { return ASSIGN; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 41 "langcell.l"
+#line 42 "langcell.l"
 { return SEMI; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 42 "langcell.l"
+#line 43 "langcell.l"
 { return COMMA; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 43 "langcell.l"
+#line 44 "langcell.l"
 { return COLON; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 44 "langcell.l"
+#line 45 "langcell.l"
 { return LPAREN; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 45 "langcell.l"
+#line 46 "langcell.l"
 { return RPAREN; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 46 "langcell.l"
+#line 47 "langcell.l"
 { return LBRACE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 47 "langcell.l"
+#line 48 "langcell.l"
 { return RBRACE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 48 "langcell.l"
+#line 49 "langcell.l"
 { return PLUS; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 49 "langcell.l"
+#line 50 "langcell.l"
 { return MINUS; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 50 "langcell.l"
+#line 51 "langcell.l"
 { return TIMES; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 51 "langcell.l"
+#line 52 "langcell.l"
 { return DIVIDE; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 54 "langcell.l"
+#line 55 "langcell.l"
 {
                           yylval.fval = atof(yytext);
                           return FLOAT;
@@ -964,7 +965,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 59 "langcell.l"
+#line 60 "langcell.l"
 {
                           yylval.ival = atoi(yytext);
                           return INT;
@@ -973,7 +974,7 @@ YY_RULE_SETUP
 case 36:
 /* rule 36 can match eol */
 YY_RULE_SETUP
-#line 65 "langcell.l"
+#line 66 "langcell.l"
 {
                           int len = yyleng - 2;
                           char *s = malloc(len + 1);
@@ -986,7 +987,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 76 "langcell.l"
+#line 77 "langcell.l"
 {
                           yylval.sval = strdup(yytext);
                           return CELL;
@@ -994,7 +995,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 82 "langcell.l"
+#line 83 "langcell.l"
 {
                           fprintf(stderr, "Unexpected char: %s\n", yytext);
                           exit(1);
@@ -1002,10 +1003,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 87 "langcell.l"
+#line 88 "langcell.l"
 ECHO;
 	YY_BREAK
-#line 1009 "langcell.lex.c"
+#line 1010 "langcell.lex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1973,7 +1974,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 87 "langcell.l"
+#line 88 "langcell.l"
 
 
 

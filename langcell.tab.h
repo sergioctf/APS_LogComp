@@ -97,13 +97,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 12 "langcell.y"
+#line 19 "langcell.y"
 
-    int     ival;
-    double  fval;
-    char   *sval;
+    int       ival;
+    double    fval;
+    char     *sval;
+    Expr     *expr;
+    Expr     *expr_list;
+    Stmt     *stmt;
+    Stmt     *stmt_list;
 
-#line 107 "langcell.tab.h"
+#line 111 "langcell.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

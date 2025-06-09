@@ -1,0 +1,5 @@
+// Teste básico de atribuições e tabela
+A1 = 42;
+B1 = 3.14;
+C1 = A1 + B1;
+TABLE;
