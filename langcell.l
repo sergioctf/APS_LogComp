@@ -71,7 +71,7 @@ extern YYSTYPE yylval;
                           return TEXT;
                         }
 
-[A-Z][0-9]+             {
+[A-Z]+[0-9]+             {
                           yylval.sval = strdup(yytext);
                           return CELL;
                         }

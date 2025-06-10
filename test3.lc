@@ -1,0 +1,8 @@
+// test3.lc
+// Teste de texto, TABLE e EXPORT CSV
+T1 = "hello";
+T2 = "world";
+A1 = 42;
+A2 = A1 / 2;              // apenas para misturar numérico e texto
+TABLE;
+EXPORT "output_test3.csv";

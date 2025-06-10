@@ -17,25 +17,13 @@ int yyerror(const char *s) {
 }
 
 int main() {
-    extern int yydebug;
-    yydebug = 1;
-
-    if (yyparse() != 0) return 1;
-
-    int sem_errs = analyze_stmt_list(program_root);
-    if (sem_errs > 0) {
-        std::fprintf(stderr, "Foram encontrados %d erro(s) semânticos.\n", sem_errs);
-        return 1;
-    }
-
-    // Inicializa o JIT e gera/executa o código LLVM
+    if (yyparse()!=0) return 1;
+    if (analyze_stmt_list(program_root)>0) return 1;
     init_llvm("LangCellModule");
     generate_code(program_root);
     return run_code();
-
-    // Se quiser voltar ao interpretador:
-    // return interpret(program_root);
-}
+  }
+  
 
 
 // #include <cstdio>

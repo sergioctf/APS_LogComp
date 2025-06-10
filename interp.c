@@ -7,6 +7,43 @@
 #include <string.h>
 #include "ast.h"
 
+// sum_helper, avg_helper, min_helper, max_helper
+double sum_helper(int n, double *vals) {
+  double acc = 0.0;
+  for (int i = 0; i < n; ++i) acc += vals[i];
+  return acc;
+}
+
+double avg_helper(int n, double *vals) {
+  double acc = sum_helper(n, vals);
+  return n>0 ? acc / n : 0.0;
+}
+
+double min_helper(int n, double *vals) {
+  if (n<=0) return 0.0;
+  double m = vals[0];
+  for (int i = 1; i < n; ++i) if (vals[i] < m) m = vals[i];
+  return m;
+}
+
+double max_helper(int n, double *vals) {
+  if (n<=0) return 0.0;
+  double m = vals[0];
+  for (int i = 1; i < n; ++i) if (vals[i] > m) m = vals[i];
+  return m;
+}
+
+
+// export_csv
+void export_csv(const char *filename,
+                int n_cells, const char **names, double *values) {
+  FILE *f = fopen(filename, "w");
+  for (int i = 0; i < n_cells; ++i)
+    fprintf(f, "%s,%g\n", names[i], values[i]);
+  fclose(f);
+}
+
+
 // Se string contém vírgula, aspas ou newline, envolve em "..." e duplica as aspas internas
 static char *csv_escape(const char *s) {
   int need = 0;
