@@ -126,22 +126,20 @@
 ## Exemplo Completo
 
 ```lc
-// Matriz 3×3 e agregações aninhadas
-A1 = 11; B1 = 12; C1 = 13;
-A2 = 21; B2 = 22; C2 = 23;
-A3 = 31; B3 = 32; C3 = 33;
-
-S1 = SUM(A1:C3);                // soma 9 elementos
-S2 = SUM(A1:C3, S1);            // soma + S1
-AVG2 = AVERAGE(S2, 40, 50);     // média mista
-FLAG = (AVG2 >= 50) AND NOT (AVG2 < 50);
-
-WHILE S2 < 200 {
-  S2 = S2 + 10;
-}
+A1 = 10;
+A2 = 20;
+A3 = 30;
+// soma simples
+S1 = SUM(A1:A3);                // 60
+// soma aninhada
+S2 = SUM(A1:A3, S1);            // 60 + 60 = 120
+// média mista
+AVG2 = AVERAGE(S2, 40, 50);      // (120 + 40 + 50) / 3 = 70
+// expressão aritmética 
+C1 = A1 * 2 + A2 / 5 - A3;       // 10*2 + 20/5 -30 = 20 +4 -30 = -6
 
 TABLE;
-EXPORT "matriz.csv";
+EXPORT "saida.csv";
 ```
 
 ---
